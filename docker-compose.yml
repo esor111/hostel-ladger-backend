@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: kaha-hostel-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: kaha_hostel_db
+      POSTGRES_USER: kaha_user
+      POSTGRES_PASSWORD: kaha_secure_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - kaha-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kaha_user -d kaha_hostel_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # NestJS Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: kaha-hostel-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: kaha_user
+      DB_PASSWORD: kaha_secure_password
+      DB_NAME: kaha_hostel_db
+      PORT: 3001
+      JWT_SECRET: your_jwt_secret_key_change_in_production
+      LOG_LEVEL: info
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kaha-network
+    volumes:
+      - ./logs:/usr/src/app/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Database Migration and Seeding (runs once)
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: kaha-hostel-migration
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: kaha_user
+      DB_PASSWORD: kaha_secure_password
+      DB_NAME: kaha_hostel_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - kaha-network
+    command: >
+      sh -c "
+        echo 'Waiting for database to be ready...' &&
+        sleep 10 &&
+        echo 'Running database migrations...' &&
+        npm run migration:run &&
+        echo 'Seeding database...' &&
+        npm run seed:run &&
+        echo 'Database setup completed!'
+      "
+    restart: "no"
+
+# Networks
+networks:
+  kaha-network:
+    driver: bridge
+
+# Volumes
+volumes:
+  postgres_data:
+    driver: local

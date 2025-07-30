@@ -1,0 +1,1 @@
+{"version":3,"file":"allocate-payment.dto.js","sourceRoot":"","sources":["../../../src/payments/dto/allocate-payment.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,qDAA0D;AAC1D,yDAAyC;AACzC,6DAA4D;AAE5D,MAAa,kBAAkB;CAK9B;AALD,gDAKC;AADC;IAHC,IAAA,yBAAO,GAAE;IACT,IAAA,gCAAc,EAAC,EAAE,IAAI,EAAE,IAAI,EAAE,CAAC;IAC9B,IAAA,wBAAI,EAAC,GAAG,EAAE,CAAC,yCAAoB,CAAC;;8DACU"}
