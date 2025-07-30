@@ -1,28 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: kaha-hostel-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: kaha_hostel_db
-      POSTGRES_USER: kaha_user
-      POSTGRES_PASSWORD: kaha_secure_password
-      PGDATA: /var/lib/postgresql/data/pgdata
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - kaha-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kaha_user -d kaha_hostel_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # NestJS Application
   app:
     build:
@@ -33,26 +11,23 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DB_HOST: postgres
+      DB_HOST: host.docker.internal
       DB_PORT: 5432
-      DB_USERNAME: kaha_user
-      DB_PASSWORD: kaha_secure_password
+      DB_USERNAME: kaha-dev
+      DB_PASSWORD: kaha-dev
       DB_NAME: kaha_hostel_db
-      PORT: 3001
+      PORT: 3013
       JWT_SECRET: your_jwt_secret_key_change_in_production
       LOG_LEVEL: info
       FRONTEND_URL: http://localhost:3000
     ports:
-      - "3001:3001"
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - "3013:3013"
     networks:
       - kaha-network
     volumes:
       - ./logs:/usr/src/app/logs
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3001/health || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:3013/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -67,14 +42,11 @@ services:
     container_name: kaha-hostel-migration
     environment:
       NODE_ENV: development
-      DB_HOST: postgres
+      DB_HOST: host.docker.internal
       DB_PORT: 5432
-      DB_USERNAME: kaha_user
-      DB_PASSWORD: kaha_secure_password
+      DB_USERNAME: root
+      DB_PASSWORD: root
       DB_NAME: kaha_hostel_db
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - kaha-network
     command: >
