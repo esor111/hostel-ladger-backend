@@ -277,14 +277,12 @@ async function seedDatabase() {
   log("===========================", "bright");
   log("");
   log("Choose seeding method:", "cyan");
-  log("1. 🚀 API-based seeding (Recommended)", "blue");
-  log("   - Seeds data through API endpoints", "blue");
-  log("   - Tests your API while seeding", "blue");
-  log("   - More flexible and realistic", "blue");
+  log("1. 🚀 Direct database seeding (Recommended)", "blue");
+  log("   - Seeds data directly to PostgreSQL", "blue");
+  log("   - Fast and reliable", "blue");
+  log("   - Handles dependencies automatically", "blue");
   log("");
-  log("2. 📁 Direct database seeding", "yellow");
-  log("   - Seeds data directly to database", "yellow");
-  log("   - Faster but bypasses API validation", "yellow");
+  log("2. ⏸️  Skip seeding", "yellow");
   log("");
   log("3. ⏸️  Skip seeding", "magenta");
   log("");
@@ -309,9 +307,8 @@ async function seedViaAPI() {
   log("\\n🚀 API-Based Seeding", "bright");
   log("====================", "bright");
 
-  log("\\n📋 This will seed data through your API endpoints.", "cyan");
-  log("   Make sure your server is running in another terminal:", "yellow");
-  log("   npm run start:dev", "yellow");
+  log("\\n📋 This will seed data directly to your PostgreSQL database.", "cyan");
+  log("   Make sure your database is running and configured.", "yellow");
 
   const serverReady = await askQuestion(
     "\\nIs the server running and ready? (y/n): "
@@ -325,8 +322,8 @@ async function seedViaAPI() {
     return false;
   }
 
-  if (runCommand("npm run test:seed", "Running API-based seeding and tests")) {
-    log("\\n🎉 Database seeded successfully via API!", "green");
+  if (runCommand("node seed-database.js", "Running direct database seeding")) {
+    log("\\n🎉 Database seeded successfully!", "green");
     log(
       "\\n📊 Your API endpoints are working correctly and database is populated.",
       "green"

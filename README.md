@@ -40,11 +40,8 @@ npm run start:dev
 
 ### 5. Seed Data via API
 ```bash
-# Test seeding endpoints
-npm run test:seed
-
-# Or manually seed all data
-curl -X POST http://localhost:3001/api/v1/seed/all
+# Seed all data
+node seed-database.js
 ```
 
 ## 📋 Available Scripts
@@ -69,4 +66,5 @@ curl -X POST http://localhost:3001/api/v1/seed/all
 ### Data Seeding
 | Command | Description |
 |---------|-------------|
-| `npm run test:seed` | Test API seeding endpoin
+| `node seed-database.js` | Seed database with sample data |
+| `node clear-all-data.js` | Clear all seeded data

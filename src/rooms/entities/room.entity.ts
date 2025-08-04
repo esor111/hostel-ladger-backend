@@ -1,5 +1,5 @@
 import { Entity, Column, OneToMany, OneToOne, ManyToOne, JoinColumn, Index } from 'typeorm';
-import { BaseEntityWithCustomId } from '../../common/entities/base.entity';
+import { BaseEntity } from '../../common/entities/base.entity';
 import { Student } from '../../students/entities/student.entity';
 import { RoomAmenity } from './room-amenity.entity';
 import { RoomOccupant } from './room-occupant.entity';
@@ -35,7 +35,7 @@ export enum MaintenanceStatus {
 @Index(['buildingId'])
 @Index(['roomTypeId'])
 @Index(['gender'])
-export class Room extends BaseEntityWithCustomId {
+export class Room extends BaseEntity {
   @Column({ length: 255 })
   name: string;
 

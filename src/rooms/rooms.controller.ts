@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { RoomsService } from './rooms.service';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
+import { ResponseUtil } from '../common/response.util';
 
 @ApiTags('rooms')
 @Controller('rooms')
@@ -14,12 +15,7 @@ export class RoomsController {
   @ApiResponse({ status: 200, description: 'List of rooms retrieved successfully' })
   async getAllRooms(@Query() query: any) {
     const result = await this.roomsService.findAll(query);
-    
-    // ✅ FIXED: Use 'result' key to match Express API format for list endpoints
-    return {
-      status: HttpStatus.OK,
-      result: result
-    };
+    return ResponseUtil.success(result);
   }
 
   @Get('stats')
@@ -27,12 +23,7 @@ export class RoomsController {
   @ApiResponse({ status: 200, description: 'Room statistics retrieved successfully' })
   async getRoomStats() {
     const stats = await this.roomsService.getStats();
-    
-    // ✅ FIXED: Use 'stats' key to match Express API format for stats endpoints
-    return {
-      status: HttpStatus.OK,
-      stats: stats
-    };
+    return ResponseUtil.stats(stats);
   }
 
   @Get('available')
@@ -57,12 +48,7 @@ export class RoomsController {
   @ApiResponse({ status: 404, description: 'Room not found' })
   async getRoomById(@Param('id') id: string) {
     const room = await this.roomsService.findOne(id);
-    
-    // ✅ FIXED: Changed 'room' to 'data' to match Express API format
-    return {
-      status: HttpStatus.OK,
-      data: room
-    };
+    return ResponseUtil.data(room);
   }
 
   @Post()
@@ -70,12 +56,7 @@ export class RoomsController {
   @ApiResponse({ status: 201, description: 'Room created successfully' })
   async createRoom(@Body() createRoomDto: CreateRoomDto) {
     const room = await this.roomsService.create(createRoomDto);
-    
-    // ✅ FIXED: Changed 'newRoom' to 'data' to match Express API format
-    return {
-      status: HttpStatus.CREATED,
-      data: room
-    };
+    return ResponseUtil.data(room, HttpStatus.CREATED);
   }
 
   @Put(':id')

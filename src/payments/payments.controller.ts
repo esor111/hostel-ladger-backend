@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
+import { ResponseUtil } from '../common/response.util';
 
 @ApiTags('payments')
 @Controller('payments')
@@ -14,12 +15,7 @@ export class PaymentsController {
   @ApiResponse({ status: 200, description: 'List of payments retrieved successfully' })
   async getAllPayments(@Query() query: any) {
     const result = await this.paymentsService.findAll(query);
-    
-    // ✅ FIXED: Use 'result' key to match Express API format for list endpoints
-    return {
-      status: HttpStatus.OK,
-      result: result
-    };
+    return ResponseUtil.success(result);
   }
 
   @Get('stats')
@@ -27,12 +23,7 @@ export class PaymentsController {
   @ApiResponse({ status: 200, description: 'Payment statistics retrieved successfully' })
   async getPaymentStats() {
     const stats = await this.paymentsService.getStats();
-    
-    // ✅ FIXED: Use 'stats' key to match Express API format for stats endpoints
-    return {
-      status: HttpStatus.OK,
-      stats: stats
-    };
+    return ResponseUtil.stats(stats);
   }
 
   @Get('student/:studentId')

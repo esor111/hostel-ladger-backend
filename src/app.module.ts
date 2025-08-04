@@ -12,7 +12,6 @@ import { LedgerModule } from './ledger/ledger.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ReportsModule } from './reports/reports.module';
-import { SeedModule } from './database/seeds/seed.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -35,7 +34,6 @@ import { HealthController } from './health/health.controller';
     BookingsModule,
     AnalyticsModule,
     ReportsModule,
-    SeedModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],

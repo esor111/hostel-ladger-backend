@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { InvoicesService } from './invoices.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
+import { ResponseUtil } from '../common/response.util';
 
 @ApiTags('invoices')
 @Controller('invoices')
@@ -14,12 +15,7 @@ export class InvoicesController {
   @ApiResponse({ status: 200, description: 'List of invoices retrieved successfully' })
   async getAllInvoices(@Query() query: any) {
     const result = await this.invoicesService.findAll(query);
-
-    // ✅ FIXED: Use 'result' key to match Express API format for list endpoints
-    return {
-      status: HttpStatus.OK,
-      result: result
-    };
+    return ResponseUtil.success(result);
   }
 
   @Get('stats')
@@ -27,12 +23,7 @@ export class InvoicesController {
   @ApiResponse({ status: 200, description: 'Invoice statistics retrieved successfully' })
   async getInvoiceStats() {
     const stats = await this.invoicesService.getStats();
-
-    // ✅ FIXED: Use 'stats' key to match Express API format for stats endpoints
-    return {
-      status: HttpStatus.OK,
-      stats: stats
-    };
+    return ResponseUtil.stats(stats);
   }
 
   @Post()

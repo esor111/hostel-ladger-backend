@@ -31,8 +31,8 @@
     "db:sync": "npm run schema:sync && npm run seed:run",
     "db:reset": "npm run schema:drop && npm run schema:sync && npm run seed:run",
     "test:api": "node test-api.js",
-    "test:api:full": "node test-api-comprehensive.js",
-    "test:seed": "node test-seed-api.js"
+    "test:api:full": "node test-api-comprehensive.js"
+
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

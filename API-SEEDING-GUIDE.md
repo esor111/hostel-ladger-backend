@@ -1,382 +1,123 @@
-# 🌱 API-Based Database Seeding Guide
+# 🌱 Database Seeding Guide
 
-This guide explains how to use the API-based seeding system to populate your database with sample data.
-
-## 🎯 Why API-Based Seeding?
-
-- **Test Your APIs**: Seeding through APIs ensures your endpoints work correctly
-- **Flexible Data**: Easy to customize and modify seed data
-- **Real-world Testing**: Uses the same validation and business logic as production
-- **Incremental Seeding**: Seed specific entities without affecting others
-- **Development Friendly**: Perfect for development and testing environments
+This guide explains how to seed the NestJS Hostel Management System database with sample data using the direct PostgreSQL seeding scripts.
 
 ## 🚀 Quick Start
 
-### 1. Start Your Server
-```bash
-npm run start:dev
-```
+### 1. Prerequisites
+- PostgreSQL database running
+- Environment variables configured in `.env`
+- Database schema created (run migrations first)
 
 ### 2. Seed All Data at Once
 ```bash
-# Using curl
-curl -X POST http://localhost:3001/api/v1/seed/all
-
-# Or test the seeding API
-npm run test:seed
+# Using the direct seeding script
+node seed-database.js
 ```
 
-### 3. Check Seeding Status
+### 3. Clear All Data
 ```bash
-curl http://localhost:3001/api/v1/seed/status
+# Using the direct clearing script
+node clear-all-data.js
 ```
 
-## 📋 Available Seeding Endpoints
+## 📋 Available Scripts
 
-### Status and Overview
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v1/seed/status` | GET | Get current seed status and counts |
-
-### Individual Entity Seeding
-
-| Endpoint | Method | Description | Dependencies |
-|----------|--------|-------------|--------------|
-| `/api/v1/seed/buildings` | POST | Seed building data | None |
-| `/api/v1/seed/room-types` | POST | Seed room type definitions | None |
-| `/api/v1/seed/amenities` | POST | Seed amenity catalog | None |
-| `/api/v1/seed/rooms` | POST | Seed rooms with layouts | Buildings, Room Types, Amenities |
-| `/api/v1/seed/students` | POST | Seed student data | Rooms |
-| `/api/v1/seed/room-occupants` | POST | Seed room occupancy data | Students, Rooms |
-| `/api/v1/seed/discount-types` | POST | Seed discount type definitions | None |
-| `/api/v1/seed/invoices` | POST | Seed invoice data | Students |
-| `/api/v1/seed/payments` | POST | Seed payment records | Invoices |
-| `/api/v1/seed/payment-allocations` | POST | Seed payment-invoice allocations | Payments, Invoices |
-| `/api/v1/seed/discounts` | POST | Seed discount data | Students, Discount Types |
-| `/api/v1/seed/ledger-entries` | POST | Seed ledger entries | All Financial Entities |
-| `/api/v1/seed/bookings` | POST | Seed booking requests | None |
-
-### Bulk Operations
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v1/seed/all` | POST | Seed all entities in correct order |
-| `/api/v1/seed/custom` | POST | Seed custom data (JSON body) |
-
-### Data Management
-
-| Endpoint | Method | Description | Confirmation |
-|----------|--------|-------------|--------------|
-| `/api/v1/seed/all` | DELETE | Clear all seeded data | `?confirm=yes` |
-| `/api/v1/seed/{entity}` | DELETE | Clear specific entity data | `?confirm=yes` |
+| Script | Description |
+|--------|-------------|
+| `seed-database.js` | Seeds all entities with sample data in correct dependency order |
+| `clear-all-data.js` | Clears all seeded data in reverse dependency order |
 
 ## 🔧 Usage Examples
 
-### Basic Seeding
-
+### Seeding Data
 ```bash
-# Seed all data
-curl -X POST "http://localhost:3001/api/v1/seed/all"
+# Seed all data (checks if data exists first)
+node seed-database.js
 
-# Seed with force (overwrite existing)
-curl -X POST "http://localhost:3001/api/v1/seed/all?force=true"
-
-# Seed specific entities
-curl -X POST "http://localhost:3001/api/v1/seed/students"
-curl -X POST "http://localhost:3001/api/v1/seed/rooms?force=true"
+# The script will automatically:
+# - Check if data already exists
+# - Skip seeding if data is present
+# - Seed all entities in proper dependency order
 ```
 
-### Check Status
-
+### Clearing Data
 ```bash
-# Get current seed status
-curl "http://localhost:3001/api/v1/seed/status"
+# Clear all seeded data
+node clear-all-data.js
 
-# Response example:
-{
-  "status": 200,
-  "message": "Seed status retrieved successfully",
-  "data": {
-    "buildings": 2,
-    "roomTypes": 3,
-    "amenities": 5,
-    "rooms": 48,
-    "students": 3,
-    "invoices": 3,
-    "payments": 3,
-    "discounts": 2,
-    "bookings": 2,
-    "reports": 0,
-    "lastSeeded": "2024-07-30T10:30:00.000Z"
-  }
-}
+# This will remove all data in proper order to avoid foreign key conflicts
 ```
 
-### Custom Data Seeding
+## 📊 What Gets Seeded
 
-```bash
-# Seed custom student data
-curl -X POST "http://localhost:3001/api/v1/seed/custom" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "students": [
-      {
-        "id": "CUSTOM001",
-        "name": "Custom Student",
-        "phone": "1234567890",
-        "email": "custom@example.com",
-        "status": "Active"
-      }
-    ]
-  }'
-```
+The seeding script creates sample data for:
 
-### Data Clearing
+1. **Buildings** - Main Building and Annex Building
+2. **Room Types** - Single AC, Single Non-AC, Double AC, etc.
+3. **Amenities** - AC, WiFi, Study Table, Wardrobe, etc.
+4. **Rooms** - 50+ rooms across different floors and types
+5. **Students** - Sample students with contact and academic info
+6. **Room Occupants** - Student-room assignments
+7. **Discount Types** - Various discount categories
+8. **Invoices** - Monthly billing records
+9. **Payments** - Payment transactions
+10. **Payment Allocations** - Payment-invoice mappings
+11. **Discounts** - Applied discounts
+12. **Ledger Entries** - Financial ledger records
+13. **Booking Requests** - Sample booking applications
 
-```bash
-# Clear all data (requires confirmation)
-curl -X DELETE "http://localhost:3001/api/v1/seed/all?confirm=yes"
+## 🔄 Dependency Order
 
-# Clear specific entity data
-curl -X DELETE "http://localhost:3001/api/v1/seed/students?confirm=yes"
-```
+The seeding follows this dependency order:
+1. Independent entities: Buildings, Room Types, Amenities, Discount Types
+2. Rooms (depends on Buildings, Room Types)
+3. Students (depends on Rooms)
+4. Room Occupants (depends on Students, Rooms)
+5. Financial entities: Invoices, Payments, Payment Allocations
+6. Discounts (depends on Students, Discount Types)
+7. Ledger Entries (depends on all financial entities)
+8. Booking Requests (independent)
 
-## 🧪 Testing Your Seeding
-
-### Run Seed API Tests
-```bash
-npm run test:seed
-```
-
-This will:
-- ✅ Test all seeding endpoints
-- ✅ Verify data integrity
-- ✅ Check API response formats
-- ✅ Test error handling
-- ✅ Validate business logic
-
-### Manual Testing Workflow
-
-1. **Start Fresh**
-   ```bash
-   # Clear existing data
-   curl -X DELETE "http://localhost:3001/api/v1/seed/all?confirm=yes"
-   ```
-
-2. **Seed Step by Step (Proper Dependency Order)**
-   ```bash
-   # 1. Independent entities first
-   curl -X POST "http://localhost:3001/api/v1/seed/buildings"
-   curl -X POST "http://localhost:3001/api/v1/seed/room-types"
-   curl -X POST "http://localhost:3001/api/v1/seed/amenities"
-   
-   # 2. Rooms depend on buildings, room types, and amenities
-   curl -X POST "http://localhost:3001/api/v1/seed/rooms"
-   
-   # 3. Students depend on rooms
-   curl -X POST "http://localhost:3001/api/v1/seed/students"
-   
-   # 4. Room occupants depend on students and rooms
-   curl -X POST "http://localhost:3001/api/v1/seed/room-occupants"
-   
-   # 5. Discount types before discounts
-   curl -X POST "http://localhost:3001/api/v1/seed/discount-types"
-   
-   # 6. Financial entities
-   curl -X POST "http://localhost:3001/api/v1/seed/invoices"
-   curl -X POST "http://localhost:3001/api/v1/seed/payments"
-   curl -X POST "http://localhost:3001/api/v1/seed/payment-allocations"
-   
-   # 7. Discounts depend on students and discount types
-   curl -X POST "http://localhost:3001/api/v1/seed/discounts"
-   
-   # 8. Ledger entries depend on all financial entities
-   curl -X POST "http://localhost:3001/api/v1/seed/ledger-entries"
-   
-   # 9. Bookings are independent
-   curl -X POST "http://localhost:3001/api/v1/seed/bookings"
-   ```
-
-3. **Verify Each Step**
-   ```bash
-   curl "http://localhost:3001/api/v1/seed/status"
-   ```
-
-4. **Test Your APIs**
-   ```bash
-   npm run test:api:full
-   ```
-
-## 📊 Sample Data Overview
-
-### Buildings (2 items)
-- Main Building (4 floors, 50 rooms)
-- Annex Building (3 floors, 30 rooms)
-
-### Room Types (3 items)
-- Single AC (₹8,000/month)
-- Double AC (₹6,000/month)
-- Triple Non-AC (₹4,000/month)
-
-### Amenities (5 items)
-- Air Conditioning
-- WiFi
-- Study Table
-- Wardrobe
-- Ceiling Fan
-
-### Rooms (48 items)
-- 48 rooms across 4 floors
-- Mixed AC/Non-AC rooms
-- Gender-specific floors
-- Complete with amenities and layouts
-
-### Students (3 items)
-- John Doe (Room 101, Single AC)
-- Jane Smith (Room 301, Female floor)
-- Mike Johnson (Room 205, Double AC)
-
-### Financial Data
-- 3 invoices (July 2024)
-- 3 payments (various methods)
-- 2 discounts (early payment, hardship)
-
-### Booking Requests (2 items)
-- 1 pending request
-- 1 approved request
-
-## 🔄 Integration with Development Workflow
-
-### Development Setup
-```bash
-# 1. Set up database schema
-npm run db:setup  # Choose migration or sync mode
-
-# 2. Seed data via API
-curl -X POST "http://localhost:3001/api/v1/seed/all"
-
-# 3. Test your changes
-npm run test:api:full
-```
-
-### Testing New Features
-```bash
-# 1. Clear test data
-curl -X DELETE "http://localhost:3001/api/v1/seed/students?confirm=yes"
-
-# 2. Seed fresh test data
-curl -X POST "http://localhost:3001/api/v1/seed/students?force=true"
-
-# 3. Test your feature
-# ... your testing here ...
-```
-
-### Custom Test Scenarios
-```bash
-# Seed specific test data for your feature
-curl -X POST "http://localhost:3001/api/v1/seed/custom" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "students": [
-      {
-        "id": "TEST001",
-        "name": "Test Student",
-        "phone": "0000000000",
-        "email": "test@test.com",
-        "status": "Active"
-      }
-    ]
-  }'
-```
-
-## 🚨 Important Notes
-
-### Force Parameter
-- Use `?force=true` to overwrite existing data
-- Without force, seeding skips if data already exists
-- Useful for development iterations
-
-### Dependencies
-- Some entities depend on others (e.g., students need rooms)
-- The seeding service handles dependencies automatically
-- Use `/api/v1/seed/all` for proper dependency order
-
-### Data Validation
-- All seeded data goes through the same validation as regular API calls
-- Invalid data will be rejected with proper error messages
-- This ensures your validation logic is working correctly
-
-### Performance
-- Seeding large amounts of data may take time
-- Consider seeding in smaller batches for large datasets
-- Monitor API response times during seeding
-
-## 🛠️ Customizing Seed Data
-
-### Modify Seed Service
-Edit `src/database/seeds/seed.service.ts` to:
-- Change default data values
-- Add more sample records
-- Modify business logic
-- Add new entity types
-
-### Add Custom Endpoints
-Add new seeding endpoints in `src/database/seeds/seed.controller.ts`:
-```typescript
-@Post('my-custom-data')
-async seedMyCustomData() {
-  // Your custom seeding logic
-}
-```
-
-## 📚 Best Practices
-
-1. **Always Test**: Run `npm run test:seed` after changes
-2. **Use Force Wisely**: Only use `?force=true` when needed
-3. **Check Dependencies**: Ensure required data exists before seeding
-4. **Validate Responses**: Check API responses for errors
-5. **Clean Up**: Clear test data after testing
-6. **Document Changes**: Update this guide when adding new seed data
-
-## 🆘 Troubleshooting
+## 🛠️ Troubleshooting
 
 ### Common Issues
 
-**Seeding Fails with Validation Errors**
-- Check your entity validation rules
-- Ensure required fields are provided
-- Verify data types match entity definitions
+1. **Database Connection Error**
+   - Check your `.env` file configuration
+   - Ensure PostgreSQL is running
+   - Verify database credentials
 
-**Dependency Errors**
-- Seed dependencies first (buildings → rooms → students)
-- Use `/api/v1/seed/all` for automatic dependency handling
+2. **Data Already Exists**
+   - The seed script checks for existing data
+   - Use `clear-all-data.js` first if you want to reseed
 
-**Server Not Responding**
-- Ensure server is running: `npm run start:dev`
-- Check server logs for errors
-- Verify database connection
+3. **Foreign Key Errors**
+   - Ensure you run migrations first
+   - The scripts handle dependency order automatically
 
-**Data Not Appearing**
-- Check API response for errors
-- Verify database connection
-- Check entity relationships
+### Environment Variables
+Make sure these are set in your `.env` file:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
+DB_NAME=kaha_hostel_db
+```
 
-### Getting Help
+## 📝 Notes
 
-1. Check server logs: `npm run start:dev`
-2. Test individual endpoints: `npm run test:seed`
-3. Verify database schema: `npm run migrate status`
-4. Check API documentation: Visit `/api/docs` when server is running
+- The seeding scripts use direct PostgreSQL queries for better performance
+- Data is created with realistic relationships and constraints
+- UUIDs are generated automatically for all entities
+- Scripts include comprehensive logging for debugging
+- Both scripts handle errors gracefully and provide clear feedback
 
-## 🎉 Success!
+## 🎯 Next Steps
 
-Once seeding is complete, you should have:
-- ✅ Sample buildings and room types
-- ✅ Rooms with amenities and layouts
-- ✅ Students with complete profiles
-- ✅ Financial records (invoices, payments)
-- ✅ Discount and booking data
-- ✅ A fully functional API ready for testing
-
-Your database is now ready for development and testing! 🚀
+After seeding:
+1. Start your NestJS application: `npm run start:dev`
+2. Test the API endpoints with the seeded data
+3. Use the analytics and reporting features with sample data
+4. Explore the admin dashboard with populated data

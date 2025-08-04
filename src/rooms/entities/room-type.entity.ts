@@ -1,5 +1,5 @@
 import { Entity, Column, OneToMany, Index } from 'typeorm';
-import { BaseEntityWithCustomId } from '../../common/entities/base.entity';
+import { BaseEntity } from '../../common/entities/base.entity';
 import { Room } from './room.entity';
 
 export enum PricingModel {
@@ -12,7 +12,7 @@ export enum PricingModel {
 @Entity('room_types')
 @Index(['name'], { unique: true })
 @Index(['isActive'])
-export class RoomType extends BaseEntityWithCustomId {
+export class RoomType extends BaseEntity {
   @Column({ length: 100, unique: true })
   name: string; // Dormitory, Suite, Private, etc.
 

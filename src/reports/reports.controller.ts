@@ -9,6 +9,7 @@ import {
   GeneratePaymentReportDto, 
   GenerateLedgerReportDto 
 } from './dto/generate-report.dto';
+import { ResponseUtil } from '../common/response.util';
 
 @ApiTags('reports')
 @Controller('reports')
@@ -20,12 +21,7 @@ export class ReportsController {
   @ApiResponse({ status: 200, description: 'Report statistics retrieved successfully' })
   async getReportStats() {
     const stats = await this.reportsService.getStats();
-    
-    // ✅ FIXED: Use 'stats' key to match Express API format for stats endpoints
-    return {
-      status: HttpStatus.OK,
-      stats: stats
-    };
+    return ResponseUtil.stats(stats);
   }
 
   @Get('types')
@@ -60,12 +56,7 @@ export class ReportsController {
   @ApiResponse({ status: 200, description: 'List of reports retrieved successfully' })
   async getAllReports(@Query() query: any) {
     const result = await this.reportsService.findAll(query);
-    
-    // ✅ FIXED: Use 'result' key to match Express API format for list endpoints
-    return {
-      status: HttpStatus.OK,
-      result: result
-    };
+    return ResponseUtil.success(result);
   }
 
   @Get(':id')

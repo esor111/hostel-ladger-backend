@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Body, Param, Query, HttpStatus } from '@nes
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { LedgerService } from './ledger.service';
 import { CreateAdjustmentDto } from './dto/create-ledger-entry.dto';
+import { ResponseUtil } from '../common/response.util';
 
 @ApiTags('ledger')
 @Controller('ledgers')
@@ -13,12 +14,7 @@ export class LedgerController {
   @ApiResponse({ status: 200, description: 'List of ledger entries retrieved successfully' })
   async getAllLedgerEntries(@Query() query: any) {
     const result = await this.ledgerService.findAll(query);
-
-    // ✅ FIXED: Use 'result' key to match Express API format for list endpoints
-    return {
-      status: HttpStatus.OK,
-      result: result
-    };
+    return ResponseUtil.success(result);
   }
 
   @Get('stats')
@@ -26,12 +22,7 @@ export class LedgerController {
   @ApiResponse({ status: 200, description: 'Ledger statistics retrieved successfully' })
   async getLedgerStats() {
     const stats = await this.ledgerService.getStats();
-
-    // ✅ FIXED: Use 'stats' key to match Express API format for stats endpoints
-    return {
-      status: HttpStatus.OK,
-      stats: stats
-    };
+    return ResponseUtil.stats(stats);
   }
 
   @Get('student/:studentId')
