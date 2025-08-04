@@ -10,7 +10,7 @@ import { InvoicesModule } from './invoices/invoices.module';
 import { PaymentsModule } from './payments/payments.module';
 import { LedgerModule } from './ledger/ledger.module';
 import { BookingsModule } from './bookings/bookings.module';
-import { DiscountsModule } from './discounts/discounts.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { ReportsModule } from './reports/reports.module';
 import { SeedModule } from './database/seeds/seed.module';
 import { HealthController } from './health/health.controller';
@@ -33,7 +33,7 @@ import { HealthController } from './health/health.controller';
     PaymentsModule,
     LedgerModule,
     BookingsModule,
-    DiscountsModule,
+    AnalyticsModule,
     ReportsModule,
     SeedModule,
   ],

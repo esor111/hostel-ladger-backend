@@ -4,7 +4,7 @@ import { LedgerService } from './ledger.service';
 import { CreateAdjustmentDto } from './dto/create-ledger-entry.dto';
 
 @ApiTags('ledger')
-@Controller('api/v1/ledgers')
+@Controller('ledgers')
 export class LedgerController {
   constructor(private readonly ledgerService: LedgerService) {}
 
@@ -13,8 +13,8 @@ export class LedgerController {
   @ApiResponse({ status: 200, description: 'List of ledger entries retrieved successfully' })
   async getAllLedgerEntries(@Query() query: any) {
     const result = await this.ledgerService.findAll(query);
-    
-    // Return EXACT same format as current Express API
+
+    // ✅ FIXED: Use 'result' key to match Express API format for list endpoints
     return {
       status: HttpStatus.OK,
       result: result
@@ -26,8 +26,8 @@ export class LedgerController {
   @ApiResponse({ status: 200, description: 'Ledger statistics retrieved successfully' })
   async getLedgerStats() {
     const stats = await this.ledgerService.getStats();
-    
-    // Return EXACT same format as current Express API
+
+    // ✅ FIXED: Use 'stats' key to match Express API format for stats endpoints
     return {
       status: HttpStatus.OK,
       stats: stats
@@ -39,7 +39,7 @@ export class LedgerController {
   @ApiResponse({ status: 200, description: 'Student ledger retrieved successfully' })
   async getStudentLedger(@Param('studentId') studentId: string) {
     const entries = await this.ledgerService.findByStudentId(studentId);
-    
+
     // Return EXACT same format as current Express API
     return {
       status: HttpStatus.OK,
@@ -47,13 +47,13 @@ export class LedgerController {
     };
   }
 
-  @Get('student/:studentId/balance')
-  @ApiOperation({ summary: 'Get student current balance' })
+  @Get('balance/:studentId')
+  @ApiOperation({ summary: 'Get student balance summary' })
   @ApiResponse({ status: 200, description: 'Student balance retrieved successfully' })
   async getStudentBalance(@Param('studentId') studentId: string) {
     const balance = await this.ledgerService.getStudentBalance(studentId);
-    
-    // Return EXACT same format as current Express API
+
+    // Return EXACT same format as Express API
     return {
       status: HttpStatus.OK,
       data: balance
@@ -71,7 +71,7 @@ export class LedgerController {
       adjustmentDto.type,
       adjustmentDto.createdBy
     );
-    
+
     // Return EXACT same format as current Express API
     return {
       status: HttpStatus.CREATED,
@@ -88,7 +88,7 @@ export class LedgerController {
       reversalDto.reversedBy,
       reversalDto.reason
     );
-    
+
     // Return EXACT same format as current Express API
     return {
       status: HttpStatus.OK,

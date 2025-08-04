@@ -4,6 +4,11 @@ import { Type, Transform } from 'class-transformer';
 import { CreateRoomDto, CreateRoomAmenityDto, CreateRoomLayoutDto } from './create-room.dto';
 
 export class UpdateRoomDto extends PartialType(CreateRoomDto) {
+  // ✅ FIXED: Added 'name' field to match Express API
+  @IsOptional()
+  @IsString()
+  name?: string;
+
   @IsOptional()
   @IsString()
   roomNumber?: string;
@@ -12,6 +17,14 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {
   @IsString()
   type?: string;
 
+  // ✅ FIXED: Added 'bedCount' field to match Express API
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(10)
+  @Transform(({ value }) => parseInt(value))
+  bedCount?: number;
+
   @IsOptional()
   @IsNumber()
   @Min(1)
@@ -19,11 +32,23 @@ export class UpdateRoomDto extends PartialType(CreateRoomDto) {
   @Transform(({ value }) => parseInt(value))
   capacity?: number;
 
+  // ✅ FIXED: Added 'monthlyRate' field to match Express API
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => parseFloat(value))
+  monthlyRate?: number;
+
   @IsOptional()
   @IsNumber()
   @Min(0)
   @Transform(({ value }) => parseFloat(value))
   rent?: number;
+
+  // ✅ FIXED: Added 'gender' field to match Express API
+  @IsOptional()
+  @IsString()
+  gender?: string;
 
   @IsOptional()
   @IsNumber()

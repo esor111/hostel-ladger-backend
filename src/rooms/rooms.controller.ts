@@ -5,7 +5,7 @@ import { CreateRoomDto } from './dto/create-room.dto';
 import { UpdateRoomDto } from './dto/update-room.dto';
 
 @ApiTags('rooms')
-@Controller('api/v1/rooms')
+@Controller('rooms')
 export class RoomsController {
   constructor(private readonly roomsService: RoomsService) {}
 
@@ -15,7 +15,7 @@ export class RoomsController {
   async getAllRooms(@Query() query: any) {
     const result = await this.roomsService.findAll(query);
     
-    // Return EXACT same format as current Express API
+    // ✅ FIXED: Use 'result' key to match Express API format for list endpoints
     return {
       status: HttpStatus.OK,
       result: result
@@ -28,7 +28,7 @@ export class RoomsController {
   async getRoomStats() {
     const stats = await this.roomsService.getStats();
     
-    // Return EXACT same format as current Express API
+    // ✅ FIXED: Use 'stats' key to match Express API format for stats endpoints
     return {
       status: HttpStatus.OK,
       stats: stats
@@ -58,10 +58,10 @@ export class RoomsController {
   async getRoomById(@Param('id') id: string) {
     const room = await this.roomsService.findOne(id);
     
-    // Return EXACT same format as current Express API
+    // ✅ FIXED: Changed 'room' to 'data' to match Express API format
     return {
       status: HttpStatus.OK,
-      room: room
+      data: room
     };
   }
 
@@ -71,10 +71,10 @@ export class RoomsController {
   async createRoom(@Body() createRoomDto: CreateRoomDto) {
     const room = await this.roomsService.create(createRoomDto);
     
-    // Return EXACT same format as current Express API
+    // ✅ FIXED: Changed 'newRoom' to 'data' to match Express API format
     return {
       status: HttpStatus.CREATED,
-      newRoom: room
+      data: room
     };
   }
 
@@ -84,10 +84,10 @@ export class RoomsController {
   async updateRoom(@Param('id') id: string, @Body() updateRoomDto: UpdateRoomDto) {
     const room = await this.roomsService.update(id, updateRoomDto);
     
-    // Return EXACT same format as current Express API
+    // ✅ FIXED: Changed 'updatedRoom' to 'data' to match Express API format
     return {
       status: HttpStatus.OK,
-      updatedRoom: room
+      data: room
     };
   }
 

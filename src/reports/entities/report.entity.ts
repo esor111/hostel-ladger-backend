@@ -23,7 +23,8 @@ export enum ReportStatus {
   COMPLETED = 'completed',
   PROCESSING = 'processing',
   FAILED = 'failed',
-  QUEUED = 'queued'
+  QUEUED = 'queued',
+  SCHEDULED = 'scheduled'
 }
 
 @Entity('reports')
@@ -94,4 +95,7 @@ export class Report extends BaseEntityWithCustomId {
 
   @Column({ name: 'expires_at', type: 'timestamp', nullable: true })
   expiresAt: Date;
+
+  @Column({ name: 'scheduled_for', type: 'timestamp', nullable: true })
+  scheduledFor: Date;
 }

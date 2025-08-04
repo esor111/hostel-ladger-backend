@@ -5,7 +5,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 
 @ApiTags('payments')
-@Controller('api/v1/payments')
+@Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
@@ -15,7 +15,7 @@ export class PaymentsController {
   async getAllPayments(@Query() query: any) {
     const result = await this.paymentsService.findAll(query);
     
-    // Return EXACT same format as current Express API
+    // ✅ FIXED: Use 'result' key to match Express API format for list endpoints
     return {
       status: HttpStatus.OK,
       result: result
@@ -28,7 +28,7 @@ export class PaymentsController {
   async getPaymentStats() {
     const stats = await this.paymentsService.getStats();
     
-    // Return EXACT same format as current Express API
+    // ✅ FIXED: Use 'stats' key to match Express API format for stats endpoints
     return {
       status: HttpStatus.OK,
       stats: stats

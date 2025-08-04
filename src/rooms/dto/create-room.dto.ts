@@ -34,23 +34,48 @@ export class CreateRoomDto {
   @IsString()
   id?: string;
 
+  // ✅ FIXED: Added 'name' field to match Express API
   @IsString()
-  roomNumber: string;
+  name: string;
+
+  @IsOptional()
+  @IsString()
+  roomNumber?: string;
 
   @IsOptional()
   @IsString()
   type?: string;
 
+  // ✅ FIXED: Added 'bedCount' field to match Express API
   @IsNumber()
   @Min(1)
   @Max(10)
   @Transform(({ value }) => parseInt(value))
-  capacity: number;
+  bedCount: number;
 
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(10)
+  @Transform(({ value }) => parseInt(value))
+  capacity?: number;
+
+  // ✅ FIXED: Added 'monthlyRate' field to match Express API
   @IsNumber()
   @Min(0)
   @Transform(({ value }) => parseFloat(value))
-  rent: number;
+  monthlyRate: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => parseFloat(value))
+  rent?: number;
+
+  // ✅ FIXED: Added 'gender' field to match Express API
+  @IsOptional()
+  @IsString()
+  gender?: string;
 
   @IsOptional()
   @IsNumber()

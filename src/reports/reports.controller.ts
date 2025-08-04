@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Query, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { ReportsService } from './reports.service';
 import { 
@@ -11,9 +11,49 @@ import {
 } from './dto/generate-report.dto';
 
 @ApiTags('reports')
-@Controller('api/v1/reports')
+@Controller('reports')
 export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Get report statistics' })
+  @ApiResponse({ status: 200, description: 'Report statistics retrieved successfully' })
+  async getReportStats() {
+    const stats = await this.reportsService.getStats();
+    
+    // ✅ FIXED: Use 'stats' key to match Express API format for stats endpoints
+    return {
+      status: HttpStatus.OK,
+      stats: stats
+    };
+  }
+
+  @Get('types')
+  @ApiOperation({ summary: 'Get available report types' })
+  @ApiResponse({ status: 200, description: 'Report types retrieved successfully' })
+  async getReportTypes() {
+    const types = await this.reportsService.getReportTypes();
+    
+    // Return EXACT same format as Express API
+    return {
+      status: HttpStatus.OK,
+      data: types
+    };
+  }
+
+  @Get('download/:id')
+  @ApiOperation({ summary: 'Get report download information' })
+  @ApiResponse({ status: 200, description: 'Download information retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Report not found' })
+  async getReportDownload(@Param('id') id: string) {
+    const downloadInfo = await this.reportsService.getReportDownload(id);
+    
+    // Return EXACT same format as Express API
+    return {
+      status: HttpStatus.OK,
+      data: downloadInfo
+    };
+  }
 
   @Get()
   @ApiOperation({ summary: 'Get all reports' })
@@ -21,7 +61,7 @@ export class ReportsController {
   async getAllReports(@Query() query: any) {
     const result = await this.reportsService.findAll(query);
     
-    // Return EXACT same format as current Express API
+    // ✅ FIXED: Use 'result' key to match Express API format for list endpoints
     return {
       status: HttpStatus.OK,
       result: result
@@ -134,6 +174,34 @@ export class ReportsController {
     return {
       status: HttpStatus.OK,
       data: report
+    };
+  }
+
+  @Post('schedule')
+  @ApiOperation({ summary: 'Schedule recurring report' })
+  @ApiResponse({ status: 201, description: 'Report scheduled successfully' })
+  async scheduleReport(@Body() scheduleData: any) {
+    const scheduledReport = await this.reportsService.scheduleReport(scheduleData);
+    
+    // Return EXACT same format as Express API
+    return {
+      status: HttpStatus.CREATED,
+      data: scheduledReport
+    };
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete report' })
+  @ApiResponse({ status: 200, description: 'Report deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Report not found' })
+  async deleteReport(@Param('id') id: string) {
+    const deletedReport = await this.reportsService.deleteReport(id);
+    
+    // Return EXACT same format as Express API
+    return {
+      status: HttpStatus.OK,
+      data: deletedReport,
+      message: 'Report deleted successfully'
     };
   }
 }

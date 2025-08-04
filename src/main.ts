@@ -24,8 +24,8 @@ async function bootstrap() {
     }),
   );
 
-  // ✅ Set global prefix and versioning
-  app.setGlobalPrefix('hostel/api');
+  // ✅ Set global prefix and versioning to match Express API
+  app.setGlobalPrefix('api');
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
@@ -48,13 +48,13 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('hostel/api/v1/docs', app, document); // ✅ Versioned Swagger path
+  SwaggerModule.setup('api-docs', app, document); // ✅ Match Express Swagger path
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
 
   console.log(`🚀 Kaha Hostel NestJS API is running on: http://localhost:${port}`);
-  console.log(`📚 API Documentation available at: http://localhost:${port}/hostel/api/v1/docs`);
+  console.log(`📚 API Documentation available at: http://localhost:${port}/api-docs`);
 }
 
 bootstrap();

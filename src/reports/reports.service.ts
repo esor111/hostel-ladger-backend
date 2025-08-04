@@ -465,4 +465,124 @@ export class ReportsService {
   private generateReportId(): string {
     return `RPT${Date.now()}`;
   }
+
+  // Additional methods needed by controller
+  async getStats() {
+    const totalReports = await this.reportRepository.count();
+    const completedReports = await this.reportRepository.count({ 
+      where: { status: ReportStatus.COMPLETED } 
+    });
+    const scheduledReports = await this.reportRepository.count({ 
+      where: { status: ReportStatus.SCHEDULED } 
+    });
+
+    return {
+      totalReports,
+      completedReports,
+      scheduledReports,
+      recentReports: Math.max(0, totalReports - 30), // Last 30 reports
+      reportsByType: {
+        occupancy: await this.reportRepository.count({ where: { type: ReportType.OCCUPANCY } }),
+        financial: await this.reportRepository.count({ where: { type: ReportType.FINANCIAL } }),
+        student: await this.reportRepository.count({ where: { type: ReportType.STUDENT } }),
+        payment: await this.reportRepository.count({ where: { type: ReportType.PAYMENT } }),
+        ledger: await this.reportRepository.count({ where: { type: ReportType.LEDGER } })
+      }
+    };
+  }
+
+  async getReportTypes() {
+    return [
+      {
+        value: 'occupancy',
+        label: 'Room Occupancy Report',
+        description: 'Current room occupancy status and availability',
+        icon: 'home'
+      },
+      {
+        value: 'financial',
+        label: 'Financial Summary Report',
+        description: 'Revenue, payments, and outstanding balances',
+        icon: 'dollar-sign'
+      },
+      {
+        value: 'student',
+        label: 'Student Management Report',
+        description: 'Student enrollment and status summary',
+        icon: 'users'
+      },
+      {
+        value: 'payment',
+        label: 'Payment Analysis Report',
+        description: 'Payment trends and collection analysis',
+        icon: 'credit-card'
+      },
+      {
+        value: 'ledger',
+        label: 'Ledger Summary Report',
+        description: 'Detailed ledger entries and balance analysis',
+        icon: 'book'
+      }
+    ];
+  }
+
+  async getReportDownload(id: string) {
+    const report = await this.reportRepository.findOne({ where: { id } });
+    
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    // Mock download information - in real implementation would generate actual files
+    return {
+      reportId: report.id,
+      fileName: `${report.name.replace(/\s+/g, '_')}_${report.id}.pdf`,
+      filePath: `/reports/${report.id}.pdf`,
+      format: 'pdf',
+      fileSize: '2.5 MB',
+      downloadUrl: `/api/v1/reports/download/${report.id}/file`
+    };
+  }
+
+  async scheduleReport(scheduleData: any) {
+    const report = this.reportRepository.create({
+      id: this.generateReportId(),
+      name: scheduleData.name,
+      type: scheduleData.type as ReportType,
+      description: scheduleData.description || '',
+      parameters: scheduleData.parameters || {},
+      status: ReportStatus.SCHEDULED,
+      generatedBy: scheduleData.generatedBy || 'system',
+      // In real implementation, would set up actual scheduling
+      scheduledFor: new Date(Date.now() + 24 * 60 * 60 * 1000) // Tomorrow
+    });
+
+    const savedReport = await this.reportRepository.save(report);
+
+    return {
+      reportId: savedReport.id,
+      name: savedReport.name,
+      type: savedReport.type,
+      status: savedReport.status,
+      scheduledFor: savedReport.scheduledFor,
+      scheduleConfig: scheduleData.scheduleConfig
+    };
+  }
+
+  async deleteReport(id: string) {
+    const report = await this.reportRepository.findOne({ where: { id } });
+    
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    await this.reportRepository.remove(report);
+
+    return {
+      reportId: id,
+      name: report.name,
+      deletedAt: new Date(),
+      message: 'Report deleted successfully'
+    };
+  }
 }

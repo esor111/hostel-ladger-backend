@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # NestJS Application
   app:
     build:
       context: .
@@ -11,7 +10,7 @@ services:
     restart: unless-stopped
     environment:
       NODE_ENV: production
-      DB_HOST: postgres
+      DB_HOST: host.docker.internal   # <--- Key change
       DB_PORT: 5432
       DB_USERNAME: kaha-dev
       DB_PASSWORD: kaha-dev
@@ -22,8 +21,6 @@ services:
       FRONTEND_URL: http://localhost:3000
     ports:
       - "3013:3013"
-    networks:
-      - kaha-network
     volumes:
       - ./logs:/usr/src/app/logs
     healthcheck:
@@ -33,40 +30,24 @@ services:
       retries: 3
       start_period: 40s
 
-  # Database Migration and Seeding (runs once)
   migration:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
+      target: migration
     container_name: kaha-hostel-migration
     environment:
       NODE_ENV: development
-      DB_HOST: host.docker.internal
+      DB_HOST: host.docker.internal  # <--- Key change
       DB_PORT: 5432
-      DB_USERNAME: root
-      DB_PASSWORD: root
+      DB_USERNAME: kaha-dev
+      DB_PASSWORD: kaha-dev
       DB_NAME: kaha_hostel_db
-    networks:
-      - kaha-network
     command: >
-      sh -c "
-        echo 'Waiting for database to be ready...' &&
-        sleep 10 &&
-        echo 'Running database migrations...' &&
-        npm run migration:run &&
-        echo 'Seeding database...' &&
-        npm run seed:run &&
-        echo 'Database setup completed!'
-      "
-    restart: "no"
+      npm run migration:run
+    volumes:
+      - ./logs:/usr/src/app/logs
 
-# Networks
 networks:
-  kaha-network:
+  default:
     driver: bridge
-
-# Volumes
-volumes:
-  postgres_data:
-    driver: local

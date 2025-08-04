@@ -376,4 +376,30 @@ export class LedgerService {
   private generateEntryId(): string {
     return `LED${Date.now()}`;
   }
+
+  // Additional methods needed by controller
+  async generateLedgerEntries(options: any = {}) {
+    // Placeholder implementation - would generate entries from invoices and payments
+    return {
+      message: 'Ledger entries generation not yet implemented',
+      options
+    };
+  }
+
+  async createLedgerEntry(entryData: any) {
+    // Placeholder implementation - would create a manual ledger entry
+    return {
+      message: 'Manual ledger entry creation not yet implemented',
+      entryData
+    };
+  }
+
+  async updateLedgerEntry(id: string, updateData: any) {
+    // Placeholder implementation - would update an existing ledger entry
+    return {
+      message: 'Ledger entry update not yet implemented',
+      id,
+      updateData
+    };
+  }
 }
