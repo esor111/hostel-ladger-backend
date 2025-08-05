@@ -1,53 +1,30 @@
 version: '3.8'
 
 services:
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
-    container_name: kaha-hostel-api
-    restart: unless-stopped
-    environment:
-      NODE_ENV: production
-      DB_HOST: host.docker.internal   # <--- Key change
-      DB_PORT: 5432
-      DB_USERNAME: kaha-dev
-      DB_PASSWORD: kaha-dev
-      DB_NAME: kaha_hostel_db
-      PORT: 3013
-      JWT_SECRET: your_jwt_secret_key_change_in_production
-      LOG_LEVEL: info
-      FRONTEND_URL: http://localhost:3000
+  kaha-hostel-api:
+    image: node:18-alpine
+    container_name: kaha-hostel-nestjs
+    working_dir: /app
     ports:
-      - "3013:3013"
+      - "3012:3012"
     volumes:
-      - ./logs:/usr/src/app/logs
-    healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:3013/health || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
-  migration:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: migration
-    container_name: kaha-hostel-migration
+      - .:/app
+      - /app/node_modules
     environment:
-      NODE_ENV: development
-      DB_HOST: host.docker.internal  # <--- Key change
-      DB_PORT: 5432
-      DB_USERNAME: kaha-dev
-      DB_PASSWORD: kaha-dev
-      DB_NAME: kaha_hostel_db
-    command: >
-      npm run migration:run
-    volumes:
-      - ./logs:/usr/src/app/logs
+      - NODE_ENV=development
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+      - DB_USERNAME=root
+      - DB_PASSWORD=root
+      - DB_NAME=kaha_hostel_db
+      - PORT=3012
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: sh -c "npm install && npm run start:dev"
+    restart: unless-stopped
+    networks:
+      - kaha-network
 
 networks:
-  default:
+  kaha-network:
     driver: bridge

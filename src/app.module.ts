@@ -14,7 +14,7 @@ import { DiscountsModule } from './discounts/discounts.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ReportsModule } from './reports/reports.module';
-import { HealthController } from './health/health.controller';
+import { HealthModule } from './health/health.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -40,8 +40,9 @@ import { UsersModule } from './users/users.module';
     AnalyticsModule,
     ReportsModule,
     UsersModule,
+    HealthModule,
   ],
-  controllers: [AppController, HealthController],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
