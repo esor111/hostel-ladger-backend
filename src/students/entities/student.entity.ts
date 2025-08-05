@@ -7,6 +7,7 @@ import { Invoice } from '../../invoices/entities/invoice.entity';
 import { Payment } from '../../payments/entities/payment.entity';
 import { LedgerEntry } from '../../ledger/entities/ledger-entry.entity';
 import { Discount } from '../../discounts/entities/discount.entity';
+import { AdminCharge } from '../../admin-charges/entities/admin-charge.entity';
 import { StudentContact } from './student-contact.entity';
 import { StudentAcademicInfo } from './student-academic-info.entity';
 import { StudentFinancialInfo } from './student-financial-info.entity';
@@ -88,6 +89,9 @@ export class Student extends BaseEntity {
 
   @OneToMany(() => Discount, discount => discount.student)
   discounts: Discount[];
+
+  @OneToMany(() => AdminCharge, adminCharge => adminCharge.student)
+  adminCharges: AdminCharge[];
 
   @OneToMany(() => RoomOccupant, occupant => occupant.student)
   roomOccupancy: RoomOccupant[];

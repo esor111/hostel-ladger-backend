@@ -26,9 +26,14 @@ import { LedgerEntry } from '../ledger/entities/ledger-entry.entity';
 import { Discount } from '../discounts/entities/discount.entity';
 import { DiscountType } from '../discounts/entities/discount-type.entity';
 
+import { AdminCharge } from '../admin-charges/entities/admin-charge.entity';
+import { ChargeType } from '../admin-charges/entities/charge-type.entity';
+
 import { BookingRequest } from '../bookings/entities/booking-request.entity';
 
 import { Report } from '../reports/entities/report.entity';
+
+import { User } from '../users/entities/user.entity';
 
 // Load environment variables
 config();
@@ -67,11 +72,18 @@ export const dataSourceOptions: DataSourceOptions = {
     Discount,
     DiscountType,
     
+    // Admin Charges entities
+    AdminCharge,
+    ChargeType,
+    
     // Booking entities
     BookingRequest,
     
     // Report entities
     Report,
+    
+    // User entities
+    User,
   ],
   migrations: ['src/database/migrations/*{.ts,.js}'],
   synchronize: false, // Always false in production

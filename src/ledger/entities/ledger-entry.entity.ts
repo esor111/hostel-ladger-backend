@@ -1,6 +1,8 @@
-import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Student } from '../../students/entities/student.entity';
+import { AdminCharge } from '../../admin-charges/entities/admin-charge.entity';
+import { Discount } from '../../discounts/entities/discount.entity';
 
 export enum LedgerEntryType {
   INVOICE = 'Invoice',
@@ -10,7 +12,18 @@ export enum LedgerEntryType {
   REFUND = 'Refund',
   PENALTY = 'Penalty',
   CREDIT_NOTE = 'Credit Note',
-  DEBIT_NOTE = 'Debit Note'
+  DEBIT_NOTE = 'Debit Note',
+  ADMIN_CHARGE = 'Admin Charge'
+}
+
+export enum LedgerEntrySource {
+  MANUAL = 'manual',
+  INVOICE = 'invoice',
+  PAYMENT = 'payment',
+  ADMIN_CHARGE = 'admin_charge',
+  DISCOUNT = 'discount',
+  ADJUSTMENT = 'adjustment',
+  SYSTEM = 'system'
 }
 
 export enum BalanceType {
@@ -25,6 +38,9 @@ export enum BalanceType {
 @Index(['type'])
 @Index(['referenceId'])
 @Index(['balanceType'])
+@Index(['chargeId'])
+@Index(['discountId'])
+@Index(['entrySource'])
 export class LedgerEntry extends BaseEntity {
   @Column({ name: 'student_id' })
   studentId: string;
@@ -76,6 +92,23 @@ export class LedgerEntry extends BaseEntity {
   @Column({ name: 'reversal_date', type: 'date', nullable: true })
   reversalDate: Date;
 
+  @Column({ name: 'charge_id', nullable: true })
+  chargeId: string;
+
+  @Column({ name: 'discount_id', nullable: true })
+  discountId: string;
+
+  @Column({ name: 'admin_notes', type: 'text', nullable: true })
+  adminNotes: string;
+
+  @Column({
+    name: 'entry_source',
+    type: 'enum',
+    enum: LedgerEntrySource,
+    default: LedgerEntrySource.MANUAL
+  })
+  entrySource: LedgerEntrySource;
+
   // Computed Properties for API compatibility
   get studentName(): string {
     return this.student?.name || '';
@@ -85,4 +118,12 @@ export class LedgerEntry extends BaseEntity {
   @ManyToOne(() => Student, student => student.ledgerEntries, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'student_id' })
   student: Student;
+
+  @OneToOne(() => AdminCharge, adminCharge => adminCharge.ledgerEntry, { nullable: true })
+  @JoinColumn({ name: 'charge_id' })
+  adminCharge: AdminCharge;
+
+  @OneToOne(() => Discount, discount => discount.ledgerEntry, { nullable: true })
+  @JoinColumn({ name: 'discount_id' })
+  discount: Discount;
 }

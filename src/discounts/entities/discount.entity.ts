@@ -1,7 +1,8 @@
-import { Entity, Column, ManyToOne, JoinColumn, Index } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToOne, JoinColumn, Index } from 'typeorm';
 import { BaseEntity } from '../../common/entities/base.entity';
 import { Student } from '../../students/entities/student.entity';
 import { DiscountType } from './discount-type.entity';
+import { LedgerEntry } from '../../ledger/entities/ledger-entry.entity';
 
 export enum DiscountStatus {
   ACTIVE = 'active',
@@ -93,4 +94,7 @@ export class Discount extends BaseEntity {
   @ManyToOne(() => DiscountType, discountType => discountType.discounts, { nullable: true })
   @JoinColumn({ name: 'discount_type_id' })
   discountType: DiscountType;
+
+  @OneToOne(() => LedgerEntry, ledgerEntry => ledgerEntry.discount)
+  ledgerEntry: LedgerEntry;
 }

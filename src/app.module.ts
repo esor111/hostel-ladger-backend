@@ -9,10 +9,13 @@ import { RoomsModule } from './rooms/rooms.module';
 import { InvoicesModule } from './invoices/invoices.module';
 import { PaymentsModule } from './payments/payments.module';
 import { LedgerModule } from './ledger/ledger.module';
+import { AdminChargesModule } from './admin-charges/admin-charges.module';
+import { DiscountsModule } from './discounts/discounts.module';
 import { BookingsModule } from './bookings/bookings.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ReportsModule } from './reports/reports.module';
 import { HealthController } from './health/health.controller';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -31,9 +34,12 @@ import { HealthController } from './health/health.controller';
     InvoicesModule,
     PaymentsModule,
     LedgerModule,
+    AdminChargesModule,
+    DiscountsModule,
     BookingsModule,
     AnalyticsModule,
     ReportsModule,
+    UsersModule,
   ],
   controllers: [AppController, HealthController],
   providers: [AppService],
