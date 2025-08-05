@@ -2,18 +2,20 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BookingRequest, BookingStatus } from './entities/booking-request.entity';
-import { Student } from '../students/entities/student.entity';
-import { Room } from '../rooms/entities/room.entity';
+// TODO: Import when needed for approval workflow
+// import { Student } from '../students/entities/student.entity';
+// import { Room } from '../rooms/entities/room.entity';
 
 @Injectable()
 export class BookingsService {
   constructor(
     @InjectRepository(BookingRequest)
     private bookingRepository: Repository<BookingRequest>,
-    @InjectRepository(Student)
-    private studentRepository: Repository<Student>,
-    @InjectRepository(Room)
-    private roomRepository: Repository<Room>,
+    // TODO: Add Student and Room repositories when needed for approval workflow
+    // @InjectRepository(Student)
+    // private studentRepository: Repository<Student>,
+    // @InjectRepository(Room)
+    // private roomRepository: Repository<Room>,
   ) {}
 
   async findAll(filters: any = {}) {
@@ -114,7 +116,7 @@ export class BookingsService {
   }
 
   async update(id: string, updateBookingDto: any) {
-    const booking = await this.findOne(id);
+    await this.findOne(id); // Verify booking exists
     
     // Update booking request entity
     await this.bookingRepository.update(id, {
@@ -158,12 +160,10 @@ export class BookingsService {
 
     // Create student record if auto-create is enabled
     if (approvalData.createStudent) {
-      const student = await this.createStudentFromBooking(booking, approvalData);
+      await this.createStudentFromBooking(booking, approvalData);
       
-      // Link booking to student
-      await this.bookingRepository.update(id, {
-        // This will be handled by the student creation process
-      });
+      // Link booking to student (handled by student creation process)
+      console.log(`Student created from booking ${id}`);
     }
 
     return {
@@ -224,17 +224,8 @@ export class BookingsService {
       sources[row.source] = parseInt(row.count);
     });
 
-    // Monthly trend (last 6 months)
-    const monthlyTrend = await this.bookingRepository
-      .createQueryBuilder('booking')
-      .select('DATE_TRUNC(\'month\', booking.requestDate)', 'month')
-      .addSelect('COUNT(*)', 'count')
-      .where('booking.requestDate >= :sixMonthsAgo', { 
-        sixMonthsAgo: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000) 
-      })
-      .groupBy('DATE_TRUNC(\'month\', booking.requestDate)')
-      .orderBy('month', 'ASC')
-      .getRawMany();
+    // TODO: Monthly trend analysis could be added here if needed
+    // const monthlyTrend = await this.bookingRepository...
 
     // Return EXACT same format as Express server
     return {

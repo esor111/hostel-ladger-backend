@@ -17,6 +17,14 @@ export class LedgerController {
     return ResponseUtil.success(result);
   }
 
+  @Get('dashboard')
+  @ApiOperation({ summary: 'Get ledger dashboard data' })
+  @ApiResponse({ status: 200, description: 'Ledger dashboard data retrieved successfully' })
+  async getLedgerDashboard() {
+    const dashboard = await this.ledgerService.getDashboardData();
+    return ResponseUtil.data(dashboard);
+  }
+
   @Get('stats')
   @ApiOperation({ summary: 'Get ledger statistics' })
   @ApiResponse({ status: 200, description: 'Ledger statistics retrieved successfully' })

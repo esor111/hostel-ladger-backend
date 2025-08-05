@@ -118,10 +118,24 @@ export class RoomsService {
       }
     }
 
+    // Validate required fields
+    if (!createRoomDto.roomNumber) {
+      throw new Error('Room number is required');
+    }
+
+    // Check if room number already exists
+    const existingRoom = await this.roomRepository.findOne({
+      where: { roomNumber: createRoomDto.roomNumber }
+    });
+    
+    if (existingRoom) {
+      throw new Error(`Room number ${createRoomDto.roomNumber} already exists`);
+    }
+
     // Create room entity
     const room = this.roomRepository.create({
       id: createRoomDto.id,
-      name: createRoomDto.name,
+      name: createRoomDto.name || `Room ${createRoomDto.roomNumber}`,
       roomNumber: createRoomDto.roomNumber,
       bedCount: createRoomDto.bedCount || 1,
       occupancy: createRoomDto.occupancy || 0,

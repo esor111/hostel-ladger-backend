@@ -38,9 +38,8 @@ export class CreateRoomDto {
   @IsString()
   name: string;
 
-  @IsOptional()
   @IsString()
-  roomNumber?: string;
+  roomNumber: string;
 
   @IsOptional()
   @IsString()
@@ -65,6 +64,20 @@ export class CreateRoomDto {
   @Min(0)
   @Transform(({ value }) => parseFloat(value))
   monthlyRate: number;
+
+  // ✅ FIXED: Added 'baseRate' field for frontend compatibility
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => parseFloat(value))
+  baseRate?: number;
+
+  // ✅ FIXED: Added 'dailyRate' field for frontend compatibility
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => parseFloat(value))
+  dailyRate?: number;
 
   @IsOptional()
   @IsNumber()

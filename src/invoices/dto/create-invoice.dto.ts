@@ -74,4 +74,31 @@ export class CreateInvoiceDto {
   @IsOptional()
   @IsString()
   createdBy?: string;
+
+  // ✅ FIXED: Added missing fields for frontend compatibility
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => parseFloat(value))
+  subtotal?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => parseFloat(value))
+  discountTotal?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Transform(({ value }) => parseFloat(value))
+  paymentTotal?: number;
+
+  @IsOptional()
+  @IsString()
+  invoiceNumber?: string;
+
+  @IsOptional()
+  @IsString()
+  generatedBy?: string;
 }

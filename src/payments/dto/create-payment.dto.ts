@@ -2,12 +2,32 @@ import { IsString, IsNumber, IsOptional, IsDateString, IsEnum, Min } from 'class
 import { Transform } from 'class-transformer';
 
 export enum PaymentMethod {
-  CASH = 'cash',
-  CARD = 'card',
-  BANK_TRANSFER = 'bank_transfer',
-  UPI = 'upi',
-  CHEQUE = 'cheque',
-  ONLINE = 'online'
+  CASH = 'Cash',
+  CARD = 'Card', 
+  BANK_TRANSFER = 'Bank Transfer',
+  UPI = 'UPI',
+  CHEQUE = 'Cheque',
+  ONLINE = 'Online',
+  MOBILE_WALLET = 'Mobile Wallet'
+}
+
+// ✅ FIXED: Transform function to handle case variations and map frontend values
+function normalizePaymentMethod(value: string): string {
+  if (!value) return value;
+  
+  // Map frontend values to backend enum values
+  const mapping: { [key: string]: string } = {
+    'cash': 'Cash',
+    'card': 'Card',
+    'bank_transfer': 'Bank Transfer',
+    'upi': 'UPI',
+    'cheque': 'Cheque', 
+    'online': 'Online',
+    'mobile_wallet': 'Mobile Wallet'
+  };
+  
+  const lowerValue = value.toLowerCase();
+  return mapping[lowerValue] || value;
 }
 
 export class CreatePaymentDto {
@@ -28,6 +48,7 @@ export class CreatePaymentDto {
   paymentDate?: string;
 
   @IsEnum(PaymentMethod)
+  @Transform(({ value }) => normalizePaymentMethod(value))
   paymentMethod: PaymentMethod;
 
   @IsOptional()
@@ -38,9 +59,18 @@ export class CreatePaymentDto {
   @IsString()
   referenceNumber?: string;
 
+  // ✅ FIXED: Added 'reference' field for frontend compatibility
+  @IsOptional()
+  @IsString()
+  reference?: string;
+
   @IsOptional()
   @IsString()
   notes?: string;
+
+  // ✅ FIXED: Added 'invoiceIds' field for frontend compatibility
+  @IsOptional()
+  invoiceIds?: string[];
 
   @IsOptional()
   @IsString()

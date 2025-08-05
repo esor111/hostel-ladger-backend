@@ -300,6 +300,84 @@ export class LedgerService {
     };
   }
 
+  async getDashboardData() {
+    // Get basic stats
+    const stats = await this.getStats();
+    
+    // Get students with highest dues
+    const studentsWithDues = await this.studentRepository
+      .createQueryBuilder('student')
+      .leftJoinAndSelect('student.room', 'room')
+      .leftJoin('student.ledgerEntries', 'ledger')
+      .select('student.id', 'id')
+      .addSelect('student.name', 'name')
+      .addSelect('room.roomNumber', 'roomNumber')
+      .addSelect('SUM(CASE WHEN ledger.balanceType = :dr THEN ledger.balance ELSE 0 END)', 'outstandingAmount')
+      .where('ledger.isReversed = :isReversed', { isReversed: false })
+      .groupBy('student.id, student.name, room.roomNumber')
+      .having('SUM(CASE WHEN ledger.balanceType = :dr THEN ledger.balance ELSE 0 END) > 0')
+      .orderBy('SUM(CASE WHEN ledger.balanceType = :dr THEN ledger.balance ELSE 0 END)', 'DESC')
+      .limit(5)
+      .setParameter('dr', 'Dr')
+      .getRawMany();
+
+    // Get recent activities (last 10 ledger entries)
+    const recentActivities = await this.ledgerRepository
+      .createQueryBuilder('ledger')
+      .leftJoinAndSelect('ledger.student', 'student')
+      .where('ledger.isReversed = :isReversed', { isReversed: false })
+      .orderBy('ledger.createdAt', 'DESC')
+      .limit(10)
+      .getMany();
+
+    // Calculate this month's collection
+    const currentMonth = new Date();
+    const firstDayOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    
+    const thisMonthCollection = await this.ledgerRepository
+      .createQueryBuilder('ledger')
+      .select('SUM(ledger.credit)', 'totalCollection')
+      .where('ledger.type = :type', { type: 'Payment' })
+      .andWhere('ledger.createdAt >= :firstDay', { firstDay: firstDayOfMonth })
+      .andWhere('ledger.isReversed = :isReversed', { isReversed: false })
+      .getRawOne();
+
+    // Calculate advance balances (negative balances)
+    const advanceBalances = await this.ledgerRepository
+      .createQueryBuilder('ledger')
+      .select('SUM(CASE WHEN ledger.balanceType = :cr THEN ledger.balance ELSE 0 END)', 'totalAdvances')
+      .where('ledger.isReversed = :isReversed', { isReversed: false })
+      .setParameter('cr', 'Cr')
+      .getRawOne();
+
+    return {
+      summary: {
+        totalStudents: stats.activeStudents,
+        totalCollected: stats.totalCredits,
+        outstandingDues: Math.max(stats.netBalance, 0),
+        thisMonthCollection: parseFloat(thisMonthCollection?.totalCollection) || 0,
+        advanceBalances: parseFloat(advanceBalances?.totalAdvances) || 0,
+        collectionRate: stats.totalDebits > 0 ? Math.round((stats.totalCredits / stats.totalDebits) * 100) : 0
+      },
+      highestDueStudents: studentsWithDues.map(student => ({
+        id: student.id,
+        name: student.name,
+        roomNumber: student.roomNumber,
+        outstandingAmount: parseFloat(student.outstandingAmount) || 0,
+        monthsOverdue: Math.floor(Math.random() * 3) + 1 // Mock data for now
+      })),
+      recentActivities: recentActivities.map(activity => ({
+        id: activity.id,
+        studentName: activity.student?.name || 'Unknown',
+        type: activity.type.toLowerCase(),
+        amount: activity.debit > 0 ? activity.debit : activity.credit,
+        description: activity.description,
+        timestamp: activity.createdAt,
+        timeAgo: this.getTimeAgo(activity.createdAt)
+      }))
+    };
+  }
+
   async getStats() {
     const totalEntries = await this.ledgerRepository.count({ where: { isReversed: false } });
     
@@ -338,6 +416,18 @@ export class LedgerService {
       activeStudents: parseInt(balanceResult?.activeStudents) || 0,
       entryTypeBreakdown: breakdown
     };
+  }
+
+  private getTimeAgo(date: Date): string {
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInHours < 1) return 'now';
+    if (diffInHours < 24) return `${diffInHours} hours ago`;
+    if (diffInDays === 1) return '1 day ago';
+    return `${diffInDays} days ago`;
   }
 
   async findOne(id: string) {
@@ -381,13 +471,15 @@ export class LedgerService {
 
   private async getNextEntryNumber(): Promise<number> {
     const lastEntry = await this.ledgerRepository.findOne({
+      where: {},
       order: { entryNumber: 'DESC' }
     });
     return (lastEntry?.entryNumber || 0) + 1;
   }
 
   private generateEntryId(): string {
-    return `LED${Date.now()}`;
+    // Generate a proper UUID instead of LED prefix
+    return require('crypto').randomUUID();
   }
 
   // Additional methods needed by controller

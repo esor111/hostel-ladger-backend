@@ -93,7 +93,7 @@ export class InvoicesService {
       month: createInvoiceDto.month,
       total: createInvoiceDto.total || 0,
       status: createInvoiceDto.status || InvoiceStatus.UNPAID,
-      dueDate: createInvoiceDto.dueDate,
+      dueDate: createInvoiceDto.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Default: 30 days from now
       subtotal: createInvoiceDto.subtotal || 0,
       discountTotal: createInvoiceDto.discountTotal || 0,
       paymentTotal: createInvoiceDto.paymentTotal || 0,
@@ -113,7 +113,7 @@ export class InvoicesService {
   }
 
   async update(id: string, updateInvoiceDto: any) {
-    const invoice = await this.findOne(id);
+    await this.findOne(id); // Verify invoice exists
     
     // Update main invoice entity
     await this.invoiceRepository.update(id, {
@@ -173,11 +173,6 @@ export class InvoicesService {
 
   async findPending(filters: any = {}) {
     // Find invoices that are unpaid or partially paid (pending payment)
-    const pendingFilters = { 
-      ...filters, 
-      status: [InvoiceStatus.UNPAID, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE].join(',')
-    };
-    
     const queryBuilder = this.invoiceRepository.createQueryBuilder('invoice')
       .leftJoinAndSelect('invoice.student', 'student')
       .leftJoinAndSelect('student.room', 'room')
@@ -229,6 +224,9 @@ export class InvoicesService {
     // 2. Calculate their monthly fees
     // 3. Create invoices with appropriate items
     // 4. Return summary of generated invoices
+    
+    // TODO: Implement actual invoice generation logic
+    console.log(`Generating invoices for month: ${month}`, studentIds ? `for ${studentIds.length} students` : 'for all students');
     
     return {
       generated: 0,
@@ -322,7 +320,8 @@ export class InvoicesService {
   }
 
   private generateInvoiceId(): string {
-    return `INV${Date.now()}`;
+    // Generate a proper UUID instead of INV prefix
+    return require('crypto').randomUUID();
   }
 
   private generateInvoiceNumber(): string {
