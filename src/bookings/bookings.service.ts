@@ -236,18 +236,12 @@ export class BookingsService {
       .orderBy('month', 'ASC')
       .getRawMany();
 
+    // Return EXACT same format as Express server
     return {
-      totalBookings,
-      pendingBookings,
-      approvedBookings,
-      rejectedBookings,
-      cancelledBookings: totalBookings - pendingBookings - approvedBookings - rejectedBookings,
-      approvalRate: totalBookings > 0 ? (approvedBookings / totalBookings) * 100 : 0,
-      sourceBreakdown: sources,
-      monthlyTrend: monthlyTrend.map(row => ({
-        month: row.month,
-        count: parseInt(row.count)
-      }))
+      total: totalBookings,
+      pending: pendingBookings,
+      approved: approvedBookings,
+      rejected: rejectedBookings
     };
   }
 

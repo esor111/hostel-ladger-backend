@@ -26,6 +26,14 @@ export class InvoicesController {
     return ResponseUtil.stats(stats);
   }
 
+  @Get('pending')
+  @ApiOperation({ summary: 'Get pending invoices' })
+  @ApiResponse({ status: 200, description: 'Pending invoices retrieved successfully' })
+  async getPendingInvoices(@Query() query: any) {
+    const result = await this.invoicesService.findPending(query);
+    return ResponseUtil.success(result);
+  }
+
   @Post()
   @ApiOperation({ summary: 'Create new invoice' })
   @ApiResponse({ status: 201, description: 'Invoice created successfully' })

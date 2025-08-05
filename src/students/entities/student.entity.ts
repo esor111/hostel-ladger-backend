@@ -53,6 +53,12 @@ export class Student extends BaseEntity {
   @Column({ name: 'booking_request_id', nullable: true })
   bookingRequestId: string;
 
+  @Column({ name: 'id_proof_type', nullable: true })
+  idProofType: string;
+
+  @Column({ name: 'id_proof_number', nullable: true })
+  idProofNumber: string;
+
   // Relations
   @ManyToOne(() => Room, room => room.students, { nullable: true })
   @JoinColumn({ name: 'room_id' })

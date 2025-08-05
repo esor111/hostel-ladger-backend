@@ -25,6 +25,20 @@ export class LedgerController {
     return ResponseUtil.stats(stats);
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get ledger entry by ID' })
+  @ApiResponse({ status: 200, description: 'Ledger entry retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Ledger entry not found' })
+  async getLedgerEntryById(@Param('id') id: string) {
+    const entry = await this.ledgerService.findOne(id);
+    
+    // Return EXACT same format as current Express API
+    return {
+      status: HttpStatus.OK,
+      data: entry
+    };
+  }
+
   @Get('student/:studentId')
   @ApiOperation({ summary: 'Get student ledger entries' })
   @ApiResponse({ status: 200, description: 'Student ledger retrieved successfully' })
@@ -67,6 +81,32 @@ export class LedgerController {
     return {
       status: HttpStatus.CREATED,
       data: entry
+    };
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create new ledger entry' })
+  @ApiResponse({ status: 201, description: 'Ledger entry created successfully' })
+  async createLedgerEntry(@Body() createDto: any) {
+    const entry = await this.ledgerService.createEntry(createDto);
+
+    // Return EXACT same format as Express API
+    return {
+      status: HttpStatus.CREATED,
+      data: entry
+    };
+  }
+
+  @Post('generate')
+  @ApiOperation({ summary: 'Generate ledger entries for a period' })
+  @ApiResponse({ status: 200, description: 'Ledger entries generated successfully' })
+  async generateLedgerEntries(@Body() generateDto: any) {
+    const result = await this.ledgerService.generateEntries(generateDto);
+
+    // Return EXACT same format as Express API
+    return {
+      status: HttpStatus.OK,
+      data: result
     };
   }
 

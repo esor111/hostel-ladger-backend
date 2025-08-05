@@ -26,6 +26,14 @@ export class PaymentsController {
     return ResponseUtil.stats(stats);
   }
 
+  @Get('recent')
+  @ApiOperation({ summary: 'Get recent payments' })
+  @ApiResponse({ status: 200, description: 'Recent payments retrieved successfully' })
+  async getRecentPayments(@Query() query: any) {
+    const result = await this.paymentsService.findRecent(query);
+    return ResponseUtil.success(result);
+  }
+
   @Get('student/:studentId')
   @ApiOperation({ summary: 'Get payments by student ID' })
   @ApiResponse({ status: 200, description: 'Student payments retrieved successfully' })

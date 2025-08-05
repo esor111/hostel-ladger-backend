@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { LedgerEntry, LedgerEntryType, BalanceType } from './entities/ledger-entry.entity';
-import { Student } from '../students/entities/student.entity';
+import { Student, StudentStatus } from '../students/entities/student.entity';
 import { Invoice } from '../invoices/entities/invoice.entity';
 import { Payment } from '../payments/entities/payment.entity';
 import { Discount } from '../discounts/entities/discount.entity';
@@ -340,6 +340,19 @@ export class LedgerService {
     };
   }
 
+  async findOne(id: string) {
+    const entry = await this.ledgerRepository.findOne({
+      where: { id },
+      relations: ['student']
+    });
+    
+    if (!entry) {
+      throw new NotFoundException('Ledger entry not found');
+    }
+    
+    return this.transformToApiResponse(entry);
+  }
+
   // Transform normalized data back to exact API format
   private transformToApiResponse(entry: LedgerEntry): any {
     return {
@@ -402,4 +415,72 @@ export class LedgerService {
       updateData
     };
   }
-}
+
+  async createEntry(createDto: any) {
+    const student = await this.studentRepository.findOne({ where: { id: createDto.studentId } });
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+
+    // Get current balance
+    const currentBalance = await this.getStudentBalance(createDto.studentId);
+    const balanceChange = (createDto.debit || 0) - (createDto.credit || 0);
+    const newBalance = currentBalance.currentBalance + balanceChange;
+    
+    const entry = this.ledgerRepository.create({
+      id: this.generateEntryId(),
+      studentId: createDto.studentId,
+      date: createDto.date || new Date(),
+      type: createDto.type || LedgerEntryType.ADJUSTMENT,
+      description: createDto.description,
+      referenceId: createDto.referenceId || null,
+      debit: createDto.debit || 0,
+      credit: createDto.credit || 0,
+      balance: Math.abs(newBalance),
+      balanceType: newBalance > 0 ? BalanceType.DR : newBalance < 0 ? BalanceType.CR : BalanceType.NIL,
+      entryNumber: await this.getNextEntryNumber(),
+      createdBy: createDto.createdBy || 'admin'
+    });
+
+    const savedEntry = await this.ledgerRepository.save(entry);
+    
+    // Update student's current balance
+    await this.updateStudentBalance(createDto.studentId);
+    
+    return this.transformToApiResponse(savedEntry);
+  }
+
+  async generateEntries(generateDto: any) {
+    const { month, year, studentIds } = generateDto;
+    
+    // If no specific students provided, generate for all active students
+    let students;
+    if (studentIds && studentIds.length > 0) {
+      students = await this.studentRepository.findByIds(studentIds);
+    } else {
+      students = await this.studentRepository.find({ where: { status: StudentStatus.ACTIVE } });
+    }
+
+    const generatedEntries = [];
+    
+    for (const student of students) {
+      // Generate monthly rent entry
+      const rentEntry = await this.createEntry({
+        studentId: student.id,
+        date: new Date(year || new Date().getFullYear(), (month || new Date().getMonth()) - 1, 1),
+        type: LedgerEntryType.INVOICE,
+        description: `Monthly rent - ${month}/${year} - ${student.name}`,
+        debit: 8000, // Default rent amount
+        credit: 0,
+        createdBy: 'system'
+      });
+      
+      generatedEntries.push(rentEntry);
+    }
+
+    return {
+      message: `Generated ${generatedEntries.length} ledger entries`,
+      count: generatedEntries.length,
+      entries: generatedEntries
+    };
+  }}

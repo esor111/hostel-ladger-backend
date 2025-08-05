@@ -212,6 +212,58 @@ export class PaymentsService {
     };
   }
 
+  async findRecent(filters: any = {}) {
+    const { page = 1, limit = 50, days = 30 } = filters;
+    
+    // Calculate date threshold for "recent" payments
+    const recentDate = new Date();
+    recentDate.setDate(recentDate.getDate() - days);
+    
+    const queryBuilder = this.paymentRepository.createQueryBuilder('payment')
+      .leftJoinAndSelect('payment.student', 'student')
+      .leftJoinAndSelect('student.room', 'room')
+      .leftJoinAndSelect('payment.invoiceAllocations', 'allocations')
+      .leftJoinAndSelect('allocations.invoice', 'invoice')
+      .where('payment.paymentDate >= :recentDate', { recentDate })
+      .andWhere('payment.status = :status', { status: PaymentStatus.COMPLETED }); // Only show completed payments
+    
+    // Apply additional filters
+    if (filters.studentId) {
+      queryBuilder.andWhere('payment.studentId = :studentId', { studentId: filters.studentId });
+    }
+    
+    if (filters.paymentMethod) {
+      queryBuilder.andWhere('payment.paymentMethod = :paymentMethod', { paymentMethod: filters.paymentMethod });
+    }
+    
+    // Apply pagination
+    const offset = (page - 1) * limit;
+    queryBuilder.skip(offset).take(limit);
+    
+    // Order by payment date (most recent first)
+    queryBuilder.orderBy('payment.paymentDate', 'DESC');
+    
+    const [payments, total] = await queryBuilder.getManyAndCount();
+    
+    // Transform to API response format
+    const transformedItems = payments.map(payment => this.transformToApiResponse(payment));
+    
+    return {
+      items: transformedItems,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      },
+      dateRange: {
+        from: recentDate,
+        to: new Date(),
+        days
+      }
+    };
+  }
+
   async processBulkPayments(payments: any[]) {
     const results = {
       successful: 0,

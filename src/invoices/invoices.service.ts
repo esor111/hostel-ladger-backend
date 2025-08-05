@@ -171,6 +171,57 @@ export class InvoicesService {
     };
   }
 
+  async findPending(filters: any = {}) {
+    // Find invoices that are unpaid or partially paid (pending payment)
+    const pendingFilters = { 
+      ...filters, 
+      status: [InvoiceStatus.UNPAID, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE].join(',')
+    };
+    
+    const queryBuilder = this.invoiceRepository.createQueryBuilder('invoice')
+      .leftJoinAndSelect('invoice.student', 'student')
+      .leftJoinAndSelect('student.room', 'room')
+      .leftJoinAndSelect('invoice.items', 'items')
+      .leftJoinAndSelect('invoice.paymentAllocations', 'paymentAllocations')
+      .leftJoinAndSelect('paymentAllocations.payment', 'payment')
+      .where('invoice.status IN (:...statuses)', { 
+        statuses: [InvoiceStatus.UNPAID, InvoiceStatus.PARTIALLY_PAID, InvoiceStatus.OVERDUE] 
+      });
+    
+    // Apply additional filters
+    if (filters.studentId) {
+      queryBuilder.andWhere('invoice.studentId = :studentId', { studentId: filters.studentId });
+    }
+    
+    if (filters.month) {
+      queryBuilder.andWhere('invoice.month = :month', { month: filters.month });
+    }
+    
+    // Apply pagination
+    const page = filters.page || 1;
+    const limit = filters.limit || 50;
+    const offset = (page - 1) * limit;
+    queryBuilder.skip(offset).take(limit);
+    
+    // Order by due date (most urgent first)
+    queryBuilder.orderBy('invoice.dueDate', 'ASC');
+    
+    const [invoices, total] = await queryBuilder.getManyAndCount();
+    
+    // Transform to API response format
+    const transformedItems = invoices.map(invoice => this.transformToApiResponse(invoice));
+    
+    return {
+      items: transformedItems,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+  }
+
   async generateMonthlyInvoices(month: string, studentIds?: string[]) {
     // This would generate invoices for all active students for a given month
     // Implementation would involve:

@@ -58,10 +58,10 @@ export class StudentsService {
     return {
       items: transformedItems,
       pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        itemsPerPage: limit
       }
     };
   }
@@ -139,13 +139,20 @@ export class StudentsService {
       .where('ledger.balanceType = :type', { type: 'Dr' })
       .getRawOne();
 
+    // Return EXACT same format as Express server
     return {
-      totalStudents,
-      activeStudents,
-      inactiveStudents,
-      totalBalance: parseFloat(balanceResult?.totalBalance) || 0,
-      totalAdvance: 0 // Will calculate from advance payments
+      total: totalStudents,
+      active: activeStudents,
+      inactive: inactiveStudents,
+      totalOutstanding: parseFloat(balanceResult?.totalBalance) || 0,
+      totalAdvances: 0 // Will calculate from advance payments
     };
+  }
+
+  async findActive(filters: any = {}) {
+    // Use the same findAll method but force status to active
+    const activeFilters = { ...filters, status: StudentStatus.ACTIVE };
+    return this.findAll(activeFilters);
   }
 
   // Transform normalized data back to exact API format
@@ -166,7 +173,7 @@ export class StudentsService {
     const currentBalance = 0; // Will implement with ledger
     const advanceBalance = 0; // Will implement with ledger
 
-    // Return EXACT same structure as current JSON
+    // Return EXACT same structure as Express server
     return {
       id: student.id,
       name: student.name,
@@ -176,9 +183,9 @@ export class StudentsService {
       guardianName: guardianContact?.name || null,
       guardianPhone: guardianContact?.phone || null,
       address: student.address,
-      baseMonthlyFee: baseMonthlyFee?.amount || 0,
-      laundryFee: laundryFee?.amount || 0,
-      foodFee: foodFee?.amount || 0,
+      baseMonthlyFee: Number(baseMonthlyFee?.amount) || 0, // Convert to number to match Express
+      laundryFee: Number(laundryFee?.amount) || 0,
+      foodFee: Number(foodFee?.amount) || 0,
       enrollmentDate: student.enrollmentDate,
       status: student.status,
       currentBalance,
@@ -186,10 +193,10 @@ export class StudentsService {
       emergencyContact: emergencyContact?.phone || null,
       course: currentAcademic?.course || null,
       institution: currentAcademic?.institution || null,
-      idProofType: null, // Will add to student entity if needed
-      idProofNumber: null, // Will add to student entity if needed
-      bookingRequestId: student.bookingRequestId,
-      updatedAt: student.updatedAt
+      idProofType: student.idProofType || null, // Add these fields to entity if needed
+      idProofNumber: student.idProofNumber || null,
+      bookingRequestId: student.bookingRequestId
+      // Remove updatedAt to match Express format exactly
     };
   }
 

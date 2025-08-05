@@ -40,6 +40,19 @@ export class StudentsController {
     };
   }
 
+  @Get('active')
+  @ApiOperation({ summary: 'Get active students' })
+  @ApiResponse({ status: 200, description: 'Active students retrieved successfully' })
+  async getActiveStudents(@Query() query: any) {
+    const result = await this.studentsService.findActive(query);
+    
+    // Return EXACT same format as current Express API
+    return {
+      status: HttpStatus.OK,
+      data: result
+    };
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get student by ID' })
   @ApiResponse({ status: 200, description: 'Student retrieved successfully' })

@@ -5,8 +5,8 @@ async function seedDatabase() {
     const client = new Client({
         host: process.env.DB_HOST || 'localhost',
         port: process.env.DB_PORT || 5432,
-        user: process.env.DB_USERNAME || 'postgres',
-        password: process.env.DB_PASSWORD || 'password',
+        user: process.env.DB_USERNAME || 'root',
+        password: process.env.DB_PASSWORD || 'root',
         database: process.env.DB_NAME || 'kaha_hostel_db'
     });
 
